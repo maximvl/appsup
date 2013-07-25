@@ -24,7 +24,7 @@
 -define(ETS    , restarter).
 
 -record(state  , {}).
--record(item   , {app, timeout, timer}).
+-record(unit   , {app, timeout, timer}).
 
 %%%===================================================================
 %%% API
@@ -37,7 +37,7 @@ watch(App, Timeout) ->
   maybe_cancel_timer(App),
   Timer = check_after(App, Timeout),
   ets:insert(?ETS,
-             #item{app=App, timeout=Timeout, timer=Timer}).
+             #unit{app=App, timeout=Timeout, timer=Timer}).
 
 unwatch(App) ->
   maybe_cancel_timer(App),
@@ -51,7 +51,7 @@ show_apps() ->
 %%%===================================================================
 
 init([]) ->
-  ets:new(?ETS, [set, named_table, {keypos, #item.app}]),
+  ets:new(?ETS, [set, named_table, {keypos, #unit.app}]),
   {ok, #state{}}.
 
 handle_call(_Request, _From, State) ->
@@ -71,8 +71,8 @@ handle_info({check, App}, State) ->
   end,
   case ets:lookup(?ETS, App) of
     [I] ->
-      Timer = check_after(App, I#item.timeout),
-      ets:insert(?ETS, I#item{timer=Timer});
+      Timer = check_after(App, I#unit.timeout),
+      ets:insert(?ETS, I#unit{timer=Timer});
     _ ->
       ok
   end,
@@ -98,7 +98,7 @@ check_after(App, Timeout) ->
 maybe_cancel_timer(App) ->
   case ets:lookup(?ETS, App) of
     [I] ->
-      erlang:cancel_timer(I#item.timer);
+      erlang:cancel_timer(I#unit.timer);
     _ ->
       ok
   end.
