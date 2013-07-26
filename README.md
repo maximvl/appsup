@@ -12,12 +12,25 @@ Check and restart ```lager``` every 5 seconds:
 appsup:watch(lager, 5000).
 ```
 
+Check current app every 3 seconds:
+
+```
+appsup:watch_me(3000).
+```
+
 
 Stop checking:
 
 ```
 appsup:unwatch(lager).
 ```
+
+Current app:
+```
+appsup:unwatch_me().
+```
+
+
 
 
 List apps:
