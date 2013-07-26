@@ -12,7 +12,12 @@ stop() ->
   application:stop(appsup).
 
 watch_me(Timeout) ->
-  restarter:watch(application:get_application(), Timeout).
+  case application:get_application() of
+    {ok, App} ->
+      restarter:watch(App, Timeout);
+    _ ->
+      {error, bad_application}
+  end.
 
 watch(App, Timeout) ->
   restarter:watch(App, Timeout).
@@ -21,7 +26,12 @@ unwatch(App) ->
   restarter:unwatch(App).
 
 unwatch_me() ->
-  restarter:unwatch(application:get_application()).
+  case application:get_application() of
+    {ok, App} ->
+      restarter:unwatch(App);
+    _ ->
+      {error, bad_application}
+  end.
 
 show_apps() ->
   restarter:show_apps().
