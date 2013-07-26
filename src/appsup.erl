@@ -2,7 +2,8 @@
 
 -export([start/0    , stop/0, 
          watch/2    , unwatch/1,
-         watch_me/1 , show_apps/0]).
+         watch_me/1 , unwatch_me/0,
+         show_apps/0]).
 
 start() ->
   application:start(appsup).
@@ -18,6 +19,9 @@ watch(App, Timeout) ->
 
 unwatch(App) ->
   restarter:unwatch(App).
+
+unwatch_me() ->
+  restarter:unwatch(application:get_application()).
 
 show_apps() ->
   restarter:show_apps().
