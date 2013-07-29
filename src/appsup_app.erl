@@ -10,7 +10,14 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-  appsup_sup:start_link().
+  ets:new(restarter, [set, public, named_table, {keypos, 1}]),
+  appsup_sup:start_link(),
+  case application:get_env(restarts) of
+    {ok, List} ->
+      [appsup:watch(App, Time) || {App, Time} <- List];
+    _ ->
+      ok
+  end.
 
 stop(_State) ->
   ok.

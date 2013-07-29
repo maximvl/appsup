@@ -49,7 +49,6 @@ show_apps() ->
 %%%===================================================================
 
 init([]) ->
-  ets:new(?ETS, [set, public, named_table, {keypos, 1}]),
   {ok, #state{}}.
 
 handle_call(_Request, _From, State) ->
