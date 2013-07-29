@@ -60,13 +60,7 @@ handle_cast(_Msg, State) ->
   {noreply, State}.
 
 handle_info({check, App}, State) ->
-  case application:ensure_started(App) of
-    ok ->
-      ok;
-    {error, X} ->
-      error_logger:error_report([{"failed restart", App},
-                                 {"reason", X}])
-  end,
+  check(App),
   case ets:lookup(?ETS, App) of
     [{App, Timeout, _}] ->
       Timer = check_after(App, Timeout),
@@ -100,3 +94,20 @@ maybe_cancel_timer(App) ->
     _ ->
       ok
   end.
+
+check([]) ->
+  ok;
+
+check([App|T]) ->
+  case application:ensure_started(App) of
+    ok ->
+      ok;
+    {error, {not_started, X}} ->
+      check([X,App|T]);
+    {error, X} ->
+      error_logger:error_report([{"failed restart", App},
+                                 {"reason", X}])
+  end;
+
+check(App) ->
+  check([App]).
