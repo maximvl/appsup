@@ -17,7 +17,8 @@ start(_StartType, _StartArgs) ->
       [appsup:watch(App, Time) || {App, Time} <- List];
     _ ->
       ok
-  end.
+  end,
+  ok.
 
 stop(_State) ->
   ok.
