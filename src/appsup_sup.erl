@@ -9,7 +9,7 @@
 -export([init/1]).
 
 %% Helper macro for declaring children of supervisor
--define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
+-define(CHILD(I, Type, Arg), {I, {I, start_link, [Arg]}, permanent, 5000, Type, [I]}).
 
 %% ===================================================================
 %% API functions
@@ -23,5 +23,12 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-  Restarter = ?CHILD(restarter, worker),
+  Args = case application:get_env(restarts) of
+           {ok, List} ->
+             List;
+           _ ->
+             []
+         end,
+
+  Restarter = ?CHILD(restarter, worker, Args),
   {ok, { {one_for_one, 5, 10}, [Restarter]} }.

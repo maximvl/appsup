@@ -11,7 +11,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0,
+-export([start_link/1,
         watch/2,
         unwatch/1,
         show_apps/0]).
@@ -29,8 +29,8 @@
 %%% API
 %%%===================================================================
 
-start_link() ->
-  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+start_link(Apps) ->
+  gen_server:start_link({local, ?SERVER}, ?MODULE, [Apps], []).
 
 watch(App, Timeout) ->
   maybe_cancel_timer(App),
@@ -48,7 +48,9 @@ show_apps() ->
 %%% gen_server callbacks
 %%%===================================================================
 
-init([]) ->
+init([Apps]) ->
+  ets:new(?ETS, [set, public, named_table, {keypos, 1}]),
+  [appsup:watch(App, Time) || {App, Time} <- Apps],
   {ok, #state{}}.
 
 handle_call(_Request, _From, State) ->
