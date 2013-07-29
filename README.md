@@ -10,7 +10,7 @@ Check and restart ```lager```/current-app every 5 seconds:
 
 ```
 appsup:watch(lager, 5000).
-appsup:watch_me(3000).
+appsup:watch_me(5000).
 ```
 
 
