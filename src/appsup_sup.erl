@@ -23,6 +23,6 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-  Args = application:get_env(restarts, appsup, []),
+  Args = application:get_env(appsup, restarts, []),
   Restarter = ?CHILD(restarter, worker, Args),
   {ok, { {one_for_one, 5, 10}, [Restarter]} }.
