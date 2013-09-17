@@ -99,8 +99,11 @@ maybe_cancel_timer(App) ->
       ok
   end.
 
+check([], []) ->
+  ok;
+
 check([], Defs) ->
-  [application:ensure_started(D) || D <- Defs];
+  check(Defs, []);
 
 check([App|T], Defs) ->
   case application:ensure_started(App) of
