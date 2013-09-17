@@ -12,7 +12,7 @@
 
 %% API
 -export([start_link/1,
-        watch/2,
+        watch/1,
         unwatch/1,
         show_apps/0]).
 
@@ -32,10 +32,13 @@
 start_link(Apps) ->
   gen_server:start_link({local, ?SERVER}, ?MODULE, [Apps], []).
 
-watch(App, Timeout) ->
+watch({App, Timeout}) ->
+  watch({App, Timeout, []});
+
+watch({App, Timeout, Defs}) ->
   maybe_cancel_timer(App),
   Timer = check_after(App, Timeout),
-  ets:insert(?ETS, {App, Timeout, Timer}).
+  ets:insert(?ETS, {App, Timeout, Timer, Defs}).
 
 unwatch(App) ->
   maybe_cancel_timer(App),
@@ -50,7 +53,7 @@ show_apps() ->
 
 init([Apps]) ->
   ets:new(?ETS, [set, public, named_table, {keypos, 1}]),
-  [appsup:watch(App, Time) || {App, Time} <- Apps],
+  [appsup:watch(Unit) || Unit <- Apps],
   {ok, #state{}}.
 
 handle_call(_Request, _From, State) ->
@@ -61,9 +64,9 @@ handle_cast(_Msg, State) ->
   {noreply, State}.
 
 handle_info({check, App}, State) ->
-  check(App),
   case ets:lookup(?ETS, App) of
-    [{App, Timeout, _}] ->
+    [{App, Timeout, _, Defs}] ->
+      check(App, Defs),
       Timer = check_after(App, Timeout),
       ets:insert(?ETS, {App, Timeout, Timer});
     _ ->
@@ -90,25 +93,25 @@ check_after(App, Timeout) ->
 
 maybe_cancel_timer(App) ->
   case ets:lookup(?ETS, App) of
-    [{_,_,Timer}] ->
+    [{_,_,Timer,_}] ->
       erlang:cancel_timer(Timer);
     _ ->
       ok
   end.
 
-check([]) ->
-  ok;
+check([], Defs) ->
+  [application:ensure_started(D) || D <- Defs];
 
-check([App|T]) ->
+check([App|T], Defs) ->
   case application:ensure_started(App) of
     ok ->
-      ok;
+      check(T, Defs);
     {error, {not_started, X}} ->
-      check([X,App|T]);
+      check([X,App|T], Defs);
     {error, X} ->
       error_logger:error_report([{"failed restart", App},
                                  {"reason", X}])
   end;
 
-check(App) ->
-  check([App]).
+check(App, Defs) ->
+  check([App], Defs).

@@ -23,12 +23,6 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-  Args = case application:get_env(restarts) of
-           {ok, List} ->
-             List;
-           _ ->
-             []
-         end,
-
+  Args = application:get_env(restarts, appsup, []),
   Restarter = ?CHILD(restarter, worker, Args),
   {ok, { {one_for_one, 5, 10}, [Restarter]} }.

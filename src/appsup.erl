@@ -1,7 +1,7 @@
 -module(appsup).
 
--export([start/0    , stop/0, 
-         watch/2    , unwatch/1,
+-export([start/0    , stop/0,
+         watch/1    , unwatch/1,
          watch_me/1 , unwatch_me/0,
          show_apps/0]).
 
@@ -14,13 +14,13 @@ stop() ->
 watch_me(Timeout) ->
   case application:get_application() of
     {ok, App} ->
-      restarter:watch(App, Timeout);
+      restarter:watch({App, Timeout});
     _ ->
       {error, bad_application}
   end.
 
-watch(App, Timeout) ->
-  restarter:watch(App, Timeout).
+watch(Smthing) ->
+  restarter:watch(Smthing).
 
 unwatch(App) ->
   restarter:unwatch(App).
