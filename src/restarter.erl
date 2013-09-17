@@ -68,7 +68,7 @@ handle_info({check, App}, State) ->
     [{App, Timeout, _, Defs}] ->
       check(App, Defs),
       Timer = check_after(App, Timeout),
-      ets:insert(?ETS, {App, Timeout, Timer});
+      ets:insert(?ETS, {App, Timeout, Timer, Defs});
     _ ->
       ok
   end,
